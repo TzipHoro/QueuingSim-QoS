@@ -2,7 +2,6 @@ import heapq
 import simpy
 import numpy as np
 import pandas as pd
-import seaborn as sns
 
 
 def simulate_queue(arrival_rates: np.ndarray, service_rate: float, n_sims: int = 5000) -> pd.DataFrame:
@@ -56,7 +55,7 @@ def simulate_queue(arrival_rates: np.ndarray, service_rate: float, n_sims: int =
 
         def start(self):
             self.enter_time = self.env.now
-            total_jobs[self.id] = {'enter_time': self.enter_time, 'priority': self.priority}
+            total_jobs[self.id] = {'priority': self.priority, 'enter_time': self.enter_time}
             print(f"Job {self.__str__()} entered the system at time {self.enter_time}, priority {self.priority}")
 
     class SimQueue:
@@ -93,20 +92,3 @@ def simulate_queue(arrival_rates: np.ndarray, service_rate: float, n_sims: int =
     env.start(n_sims)
 
     return pd.DataFrame(total_jobs).T
-
-
-if __name__ == '__main__':
-    np.random.seed(60)
-    lambdas = np.random.uniform(2, 60, 4)
-    mu = sum(lambdas) + 5
-
-    df = simulate_queue(arrival_rates=lambdas, service_rate=mu)
-    df['job'] = df.index
-    df['time_in_system'] = df['exit_time'] - df['enter_time']
-    df.to_csv('queue.csv')
-
-    # system time plot
-    sns.set(rc={'figure.figsize': (9, 5)})
-    plot = sns.lineplot(df, x='job', y='time_in_system', hue='priority', palette='flare')
-    plot.get_figure().savefig('sys_plot.png')
-    plot.get_figure().clf()
