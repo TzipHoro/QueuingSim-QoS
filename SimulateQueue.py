@@ -51,7 +51,7 @@ def simulate_queue(arrival_rates: np.ndarray, service_rate: float, until: int = 
         """A single server object that processes jobs given a mean service rate."""
         def __init__(self, env: simpy.Environment, svc_rate):
             self.env = env
-            self.mean_service_time = svc_rate
+            self.service_rate = svc_rate
 
         def serve(self, job):
             """
@@ -59,7 +59,7 @@ def simulate_queue(arrival_rates: np.ndarray, service_rate: float, until: int = 
 
             :param job: item to be served
             """
-            service_time = np.random.exponential(scale=self.mean_service_time)
+            service_time = np.random.exponential(scale=self.service_rate)
             yield self.env.timeout(service_time)
             job.exit_time = self.env.now
             total_jobs[job.id] = {**total_jobs[job.id], 'exit_time': job.exit_time}
