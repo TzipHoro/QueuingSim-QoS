@@ -3,7 +3,7 @@ import seaborn as sns
 
 from SimulateQueue import simulate_queue
 
-np.random.seed(60)
+np.random.seed(15)
 
 
 if __name__ == '__main__':
@@ -15,7 +15,7 @@ if __name__ == '__main__':
     # run simulation
     df = simulate_queue(arrival_rates=lambdas, service_rate=mu)
     df['job'] = df.index
-    df['priority'] = df['priority'].replace({0: 'low', 1: 'normal', 2: 'medium', 3: 'high'})
+    df['priority'] = df['priority'].replace({0: 'high', 1: 'medium', 2: 'normal', 3: 'low'})
     df['time_in_system'] = df['exit_time'] - df['enter_time']
     df.to_csv('simulations/queue.csv', index=False)
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     plot = sns.lineplot(df, x='job', y='time_in_system', hue='priority', hue_order=['low', 'normal', 'medium', 'high'],
                         palette='magma')
     plot.set(xlabel='Job', ylabel='Time in System', title='Network Traffic')
-    plot.get_figure().savefig('sys_plot.png', dpi=400)
+    plot.get_figure().savefig('plots/sys_plot.png', dpi=400)
     plot.get_figure().clf()
 
     # latency
@@ -50,4 +50,16 @@ if __name__ == '__main__':
     plot = sns.barplot(throughput, x='variable', y='value', hue='index', palette='flare')
     plot.set(xlabel='', title='Network Throughput')
     plot.get_figure().savefig('plots/throughput.png', dpi=400)
+    plot.get_figure().clf()
+
+    # jitter
+    jitter = df.groupby('priority').std()['time_in_system']
+    jitter.loc['overall'] = df['time_in_system'].std()
+    jitter.to_csv('simulations/jitter.csv')
+
+    plot = sns.kdeplot(df, x='time_in_system', hue='priority', palette='flare', multiple="stack",
+                       hue_order=['low', 'normal', 'medium', 'high'])
+    sns.kdeplot(df, x='time_in_system')
+    plot.set(xlabel='Time in System', title='Network Jitter')
+    plot.get_figure().savefig('plots/jitter.png', dpi=400)
     plot.get_figure().clf()
